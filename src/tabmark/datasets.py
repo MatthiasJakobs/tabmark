@@ -1,8 +1,5 @@
 import numpy as np
-import torch
 
-from torch.utils.data import Dataset as pt_Dataset
-from torch.utils.data import DataLoader, TensorDataset
 from sklearn.datasets import fetch_openml
 
 from tabmark.utils import to_random_state
@@ -122,35 +119,3 @@ class NumpyDataset(DatasetConverter):
         self.X = dataset.X.to_numpy()
         self.y = dataset.y.values
         self.columns = dataset.X.columns
-
-class TorchDataset(pt_Dataset, DatasetConverter):
-    def __init__(self, dataset, dtype_X=torch.float, dtype_y=torch.long):
-        self.X = torch.from_numpy(dataset.X.to_numpy()).to(dtype_X)
-        self.y = torch.from_numpy(dataset.y.values).to(dtype_y)
-        self.columns = dataset.X.columns
-
-    def split(self, percentages, return_datasets=False, shuffle=True, random_state=None):
-        tensors = super().split(percentages, shuffle=shuffle, random_state=random_state)
-        Xs = tensors[:len(tensors)//2]
-        ys = tensors[len(tensors)//2:]
-        ds_list = [TensorDataset(_x, _y) for _x, _y in zip(Xs, ys)]
-        return tuple(ds_list)
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
-
-def main():
-    print('Higgs')
-    ds = Higgs()
-    print('Adult')
-    ds = Adult(remove_country=False, remove_nan=True)
-    print('Heloc')
-    ds = Heloc()
-
-    np_Heloc = NumpyDataset(ds)
-    X_train, X_test, y_train, y_test = np_Heloc.split((0.8, 0.2), shuffle=True)
-    print(np.unique(y_train, return_counts=True))
-    print(np.unique(y_test, return_counts=True))

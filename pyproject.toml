@@ -16,6 +16,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "numpy",
+  "scikit-learn",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/MatthiasJakobs/tabmark"
