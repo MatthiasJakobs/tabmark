@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import Dataset as pt_Dataset
 from torch.utils.data import TensorDataset
 
-from tabmark import DatasetConverter
+from tabmark.datasets import DatasetConverter
 
 class TorchDataset(pt_Dataset, DatasetConverter):
     def __init__(self, dataset, dtype_X=torch.float, dtype_y=torch.long):
@@ -12,10 +12,13 @@ class TorchDataset(pt_Dataset, DatasetConverter):
 
     def split(self, percentages, return_datasets=False, shuffle=True, random_state=None):
         tensors = super().split(percentages, shuffle=shuffle, random_state=random_state)
-        Xs = tensors[:len(tensors)//2]
-        ys = tensors[len(tensors)//2:]
-        ds_list = [TensorDataset(_x, _y) for _x, _y in zip(Xs, ys)]
-        return tuple(ds_list)
+        if return_datasets:
+            Xs = tensors[:len(tensors)//2]
+            ys = tensors[len(tensors)//2:]
+            ds_list = [TensorDataset(_x, _y) for _x, _y in zip(Xs, ys)]
+            return tuple(ds_list)
+        else:
+            return tensors
 
     def __len__(self):
         return len(self.X)
