@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from torch.utils.data import Dataset as pt_Dataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 from sklearn.datasets import fetch_openml
 
 from tabmark.utils import to_random_state
@@ -128,6 +128,13 @@ class TorchDataset(pt_Dataset, DatasetConverter):
         self.X = torch.from_numpy(dataset.X.to_numpy()).to(dtype_X)
         self.y = torch.from_numpy(dataset.y.values).to(dtype_y)
         self.columns = dataset.X.columns
+
+    def split(self, percentages, return_datasets=False, shuffle=True, random_state=None):
+        tensors = super().split(percentages, shuffle=shuffle, random_state=random_state)
+        Xs = tensors[:len(tensors)//2]
+        ys = tensors[len(tensors)//2:]
+        ds_list = [TensorDataset(_x, _y) for _x, _y in zip(Xs, ys)]
+        return tuple(ds_list)
 
     def __len__(self):
         return len(self.X)
