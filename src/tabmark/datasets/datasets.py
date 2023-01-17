@@ -87,8 +87,7 @@ class Heloc(Dataset):
 
 class DatasetConverter:
     # Get indices for split of dataset based on percentage
-    def _split_indices(self, percentages):
-        n_samples = len(self.X)
+    def _split_indices(self, percentages, n_samples):
         split_sizes = [int(p * n_samples) for p in percentages]
         
         # Calculate the split points
@@ -97,7 +96,7 @@ class DatasetConverter:
 
         return split_indices
 
-    def split(self, percentages, shuffle=True, random_state=None):
+    def split(self, percentages, shuffle=True, subset_size=None, random_state=None):
         rng = to_random_state(random_state)
 
         # Shuffle
@@ -109,8 +108,16 @@ class DatasetConverter:
         _X = self.X[indices]
         _y = self.y[indices]
 
+        # Make dataset smaller if percentage of subset size is given
+        if subset_size is not None:
+            subset_size_int = int(subset_size * n_samples)
+            _X = _X[:subset_size_int]
+            _y = _y[:subset_size_int]
+
+        n_samples = len(_X)
+
         # Split
-        split_indices = self._split_indices(percentages)
+        split_indices = self._split_indices(percentages, n_samples)
         return tuple([_X[start:stop] for (start, stop) in split_indices] + [_y[start:stop] for (start, stop) in split_indices])
 
 class NumpyDataset(DatasetConverter):
